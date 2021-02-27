@@ -6,7 +6,6 @@ import TextureManager from "../managers/TextureManager";
 
 export default class FlatGenerator {
 
-
   constructor(config, scene) {
     THREE.Cache.enabled = true;
 
@@ -32,7 +31,7 @@ export default class FlatGenerator {
 
   _sceneImporter(config, scene, flatObject) {
 
-    scene.boundingBoxes = [];
+    scene.userData.boundingBoxes = [];
 
     for (const object of flatObject) {
       object.scale.set(config.size.x, config.size.y, config.size.z);
@@ -45,8 +44,9 @@ export default class FlatGenerator {
 
       const box1 = object.geometry.boundingBox.clone();
       box1.applyMatrix4(object.matrixWorld);
+      box1.userData = object.userData;
 
-      scene.boundingBoxes.push(box1);
+      scene.userData.boundingBoxes.push(box1);
 
       scene.add(object);
     }

@@ -19,6 +19,10 @@ export default class RoomGenerator {
         textureManager.getTexture('floor')
       );
 
+      roomMesh.userData = {
+        roomId: room.type
+      }
+
       roomMeshes.push(
         roomMesh
       );
@@ -58,11 +62,11 @@ export default class RoomGenerator {
     }
 
     const shape = new THREE.Shape(vectorArray);
-    const extrudeSettings = {amount: height, bevelEnabled: false};
+    const extrudeSettings = {depth: height, bevelEnabled: false};
 
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 
-    const mesh = new THREE.Mesh(geometry,new THREE.MeshLambertMaterial({map: texture, side: THREE.DoubleSide}));
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({map: texture, side: THREE.DoubleSide}));
     mesh.receiveShadow = true;
     mesh.rotateX(Math.PI / 2);
 
@@ -127,7 +131,7 @@ export default class RoomGenerator {
     );
 
     const wallShape = new THREE.Shape(wallShapeVector);
-    const extrudeSettings = {amount: -2.60, bevelEnabled: false};
+    const extrudeSettings = {depth: -2.60, bevelEnabled: false};
 
     const geometry = new THREE.ExtrudeGeometry(wallShape, extrudeSettings);
 
@@ -143,7 +147,7 @@ export default class RoomGenerator {
 
     const wallShape = new THREE.Shape(this._convertToVector(walls));
 
-    const extrudeSettings = {amount: -260};
+    const extrudeSettings = {depth: -260};
 
     const geometry = new THREE.ExtrudeGeometry(wallShape, extrudeSettings);
 

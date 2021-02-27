@@ -1,5 +1,6 @@
 import Detector from "./utils/detector.js";
 import PreloadScene from './utils/preloadScene.js';
+import SpeechManager from './sound/SpeechManager.js'
 import Main from './main/Main.js'
 
 
@@ -12,27 +13,52 @@ const detector = new Detector();
 
 const preloadScene = new PreloadScene(document);
 
+const speechManager = new SpeechManager(document);
+
 if (detector.webgl()) {
 
-    const container = document.getElementById('appContainer');
+  preloadScene.showLoading();
 
-    const main = new Main(container);
+  const container = document.getElementById('appContainer');
 
-    main.start();
+  let configPromise = fetch('./assets/config.json');
 
-    preloadScene.hideLoading();
+  configPromise.then(
+    response => response.json()
+  )
+    .then((json) => {
+      console.log(json);
 
-    main.run();
+      const main = new Main(
+        container,
+        {
+          sky: false,
+          scene: json
+        },
+        speechManager
+      );
+
+      //TODO: finish promise + progress callback
+      main.start((progress, text) => {
+          preloadScene.progress(progress, text);
+          if (progress > 99) {
+            preloadScene.hideLoading();
+            main.run();
+          }
+        }
+      );
+    });
+
 
 } else {
 
-    preloadScene.hideLoading();
+  preloadScene.hideLoading();
 
-    detector.addGetWebGLMessage(
-        {
-            parent: document.getElementById('appContainer'),
-            id: 'webgl-error'
-        }
-    );
+  detector.addGetWebGLMessage(
+    {
+      parent: document.getElementById('appContainer'),
+      id: 'webgl-error'
+    }
+  );
 
 }

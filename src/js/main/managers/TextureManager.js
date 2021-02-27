@@ -11,8 +11,12 @@ export default class TextureManager {
   }
 
   _loadTextures(textures) {
+
     const loader = new THREE.TextureLoader();
-    const texture = loader.load( "assets/textures/floor_tiles_06_diff_1k.png" );
+
+    const texture = loader.load(
+      "assets/textures/floor_tiles_06_diff_1k.png"
+    );
 
     // it's necessary to apply these settings in order to correctly display the texture on a shape geometry
 
@@ -29,7 +33,6 @@ export default class TextureManager {
     texture2.repeat.set( 1,1 );
 
     textures['door'] = texture2;
-
 
   }
 

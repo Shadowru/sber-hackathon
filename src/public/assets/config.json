@@ -1,0 +1,48 @@
+[
+  {
+    "url": "assets/interior/generated/test.json",
+    "size": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "translate": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "url2": "assets/claudia/mixamo-1613450024492.glb",
+    "url": "assets/cyber/scene (42).glb",
+    "size": {
+      "x": 0.01,
+      "y": 0.01,
+      "z": 0.01
+    },
+    "translate": {
+      "x": 3,
+      "y": -0.05,
+      "z": 3.6
+    },
+    "isAvatar": true,
+    "animated": false,
+    "animatedCycle": [
+      {
+        "animation": "idle",
+        "time": 2
+      },
+      {
+        "animation": "pointing"
+      },
+      {
+        "speed": 0.2,
+        "time": 20,
+        "animation": "walk"
+      },
+      {
+        "animation": "gesture"
+      }
+    ]
+  }
+]

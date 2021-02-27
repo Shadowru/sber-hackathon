@@ -28,7 +28,6 @@ export default class AvatarManager {
 
     this._avatarExpressions = this._getExpressions(avatar.scene);
 
-    this._startAnimation('idle', this._fade_duration);
 
     this._action = false;
     this._action2 = false;
@@ -41,6 +40,13 @@ export default class AvatarManager {
 
     this._boundingBox = cube;
 
+    this._initState();
+
+  }
+
+  _initState() {
+    this._startAnimation('idle', this._fade_duration);
+
     this._speakingState = false;
     this._speakingNext = -1;
     this._animationNext = -1;
@@ -49,6 +55,8 @@ export default class AvatarManager {
 
     this._boundingBoxes = undefined;
 
+    this._pressTime = -1;
+    this._pressTimeout = 300;
   }
 
   setSpeechManager(speechManager) {
@@ -104,11 +112,16 @@ export default class AvatarManager {
       this._expressionAnimation();
     }
 
-
     const speak = inputManager.keys.speak.down;
 
     if (speak) {
-      this.proceedSpeak();
+      if (this._isPressedTiming()) {
+        if (this._speakingState === false) {
+          this.proceedSpeak();
+        } else {
+          this._stopSpeak();
+        }
+      }
     }
 
     const action = inputManager.keys.action.down;
@@ -145,6 +158,14 @@ export default class AvatarManager {
 
     this._mixer.update(deltaTime);
 
+  }
+
+  _isPressedTiming() {
+    if (this._pressTime < Date.now()) {
+      this._pressTime = Date.now() + this._pressTimeout;
+      return true;
+    }
+    return false;
   }
 
   _getAnimations(mixer, avatar) {
@@ -243,13 +264,15 @@ export default class AvatarManager {
   }
 
   _stopSpeak() {
+
     if (this._speechManager !== undefined) {
       this._speechManager.mute();
     }
+
     this._speakingState = false;
-    this._stopAnimation('jaw', 0.02);
-    this._stopAnimation('gesture', 3);
-    this._stopAnimation('pointing', 3);
+    this._stopAnimation('jaw', this._phonemeDuration);
+    this._stopAnimation('gesture', this._stop_fade_duration);
+    this._stopAnimation('pointing', this._stop_fade_duration);
 
     const infl = this._avatarExpressions.mesh;
     infl.updateMorphTargets();
@@ -417,17 +440,14 @@ export default class AvatarManager {
 
   proceedSpeak() {
     const avatar = this._avatar;
-    const roomMesh = this._findBoundingBox(this._avatar, 0.0, this._boundingBoxes);
-    if (this._speakingState !== true) {
-      if (roomMesh !== undefined) {
-        const roomId = roomMesh.userData.roomId;
-        console.log('roomId : ' + roomId);
-        this._speakAboutRoom(roomId);
-        this._startSpeak();
-      }
-    } else {
-      this._stopSpeak();
-      this._speakingState = false;
+
+    const roomMesh = this._findBoundingBox(avatar, 0.0, this._boundingBoxes);
+
+    if (roomMesh !== undefined) {
+      const roomId = roomMesh.userData.roomId;
+      console.log('roomId : ' + roomId);
+      this._speakAboutRoom(roomId);
+      //this._startSpeak();
     }
   }
 

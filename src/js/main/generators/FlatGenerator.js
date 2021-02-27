@@ -4,6 +4,10 @@ import RoomGenerator from "./RoomGenerator";
 
 import TextureManager from "../managers/TextureManager";
 
+//import {CreateView} from "./geom/CreateView";
+import JsonConstruct from "./geom/calculus/json_construct";
+import RoomGeometryGenerator from "./geom/RoomGeometryGenerator";
+
 export default class FlatGenerator {
 
   constructor(config, scene) {
@@ -18,14 +22,25 @@ export default class FlatGenerator {
   _generateFlat(data, textureManager) {
 
     const roomGenerator = new RoomGenerator();
-    const roomMesh = roomGenerator.generate(
+    const roomMeshesArray = roomGenerator.generate(
       data['rooms'],
       data['doors'],
       data['external_walls'],
       textureManager
     );
 
-    return roomMesh;
+    const roomGeometryGenerator = new RoomGeometryGenerator();
+
+    const jsonData = JsonConstruct.json_construct(data);
+
+    console.log(jsonData);
+
+    const roomGeometry = roomGeometryGenerator.generate(
+      jsonData
+    );
+
+
+    return roomMeshesArray;
 
   }
 

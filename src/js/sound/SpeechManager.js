@@ -45,10 +45,9 @@ export default class SpeechManager {
 
     this._webVoiceCommand = WebVoiceCommand;
 
-    this._chatBotManager = new ChatBotManager();
-
     this._prevListenWords = '';
 
+    this._chatBotManager = new ChatBotManager();
     this._sberTTS = new SberTTS();
 
   }
@@ -160,16 +159,12 @@ export default class SpeechManager {
         const found = this._searchWordEntry(wordListElements, listenWords);
         if (found) {
           console.log(key);
-          if (key.startsWith('_')) {
-            this.sayAboutObject(key);
-          } else {
-            this.say(key);
-          }
+          this.sayAvatar(key);
           return;
         }
       }
     });
-
+    /*
     console.log('Listen words', listenWords);
 
     this._chatBotManager.chat(listenWords, (result) => {
@@ -180,7 +175,7 @@ export default class SpeechManager {
       });
 
     });
-
+    */
   }
 
   _searchWordEntry(wordListElements, listenWords) {
@@ -197,13 +192,23 @@ export default class SpeechManager {
     this._mainInstance = mainInstance;
   }
 
-  sayAboutObject(key) {
+  sayAvatar(id) {
+    if (this._mainInstance !== undefined) {
+
+      const avatarManager = this._mainInstance.getAvatarManager();
+
+      if (id.startsWith('_')) {
+        this._sayAboutObject(id, avatarManager);
+      } else {
+        avatarManager._speakAboutRoom(id);
+      }
+    }
+  }
+
+  _sayAboutObject(id, avatarManager) {
     if (this._mainInstance !== undefined) {
       if (key === '_room') {
-        const avatarManager = this._mainInstance.getAvatarManager();
-        if (avatarManager !== undefined) {
           avatarManager.proceedSpeak();
-        }
       }
     }
   }

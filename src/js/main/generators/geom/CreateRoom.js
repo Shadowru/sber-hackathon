@@ -1,15 +1,27 @@
-import { CreateWall } from './CreateWall.js';
-import { CreateFloor } from './CreateFloor.js';
-import { Group } from './../libs/build/three.module.js';
+import CreateWall from "./CreateWall";
+import CreateFloor from "./CreateFloor";
+import {Group} from 'three';
 
-export var CreateRoom = async function( room ){
+export default class CreateRoom {
+
+  static create(room) {
 
     let group = new Group();
 
-                                          await group.add( await CreateFloor( room.floor, room.id ) );
-    for( let doorstep of room.doorsteps ) await group.add( await CreateFloor( doorstep, room.id ) );
-    for( let wall of room.walls )         await group.add( await CreateWall( wall ) );
+    group.add(
+      CreateFloor.create(room.floor, room.id)
+    );
+
+    for (let doorstep of room.doorsteps)
+    {
+      group.add(CreateFloor.create(doorstep, room.id));
+    }
+
+    for (let wall of room.walls) {
+      group.add(CreateWall.create(wall));
+    }
 
 
     return group;
+  }
 };

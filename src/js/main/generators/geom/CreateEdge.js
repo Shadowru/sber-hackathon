@@ -3,7 +3,7 @@ import { Shape, ShapeUtils, ShapeBufferGeometry, Mesh, Path, Vector3,MeshStandar
 
 export default class CreateEdge {
 
-    create( outside, height ){
+    static create( outside, height ){
 
         if ( !ShapeUtils.isClockWise( outside.points ) ) outside.points.reverse();
 

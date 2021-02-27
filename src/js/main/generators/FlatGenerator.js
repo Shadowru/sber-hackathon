@@ -29,6 +29,7 @@ export default class FlatGenerator {
       textureManager
     );
 
+
     const roomGeometryGenerator = new RoomGeometryGenerator();
 
     const jsonData = JsonConstruct.json_construct(data);
@@ -39,6 +40,9 @@ export default class FlatGenerator {
       jsonData
     );
 
+    console.log(roomGeometry);
+
+    roomMeshesArray.push(roomGeometry);
 
     return roomMeshesArray;
 
@@ -54,18 +58,27 @@ export default class FlatGenerator {
       object.translateY(config.translate.y);
       object.translateZ(config.translate.z);
 
-      object.geometry.computeBoundingBox();
-      object.updateMatrixWorld();
+      let bbBox = undefined;
 
-      const box1 = object.geometry.boundingBox.clone();
-      box1.applyMatrix4(object.matrixWorld);
-      box1.userData = object.userData;
+      try {
+        object.geometry.computeBoundingBox();
+        object.updateMatrixWorld();
 
-      scene.userData.boundingBoxes.push(box1);
+        const box1 = object.geometry.boundingBox.clone();
+        box1.applyMatrix4(object.matrixWorld);
+        box1.userData = object.userData;
+        bbBox = box1;
+      } catch (e) {
+
+      }
+
+      if (bbBox !== undefined) {
+        scene.userData.boundingBoxes.push(bbBox);
+      }
+
 
       scene.add(object);
     }
-
 
   }
 
@@ -79,10 +92,10 @@ export default class FlatGenerator {
 
       function (data) {
 
+        const flatJson = JSON.parse(data.replaceAll('\'', '\"'));
+
         const flat = generatorInstance._generateFlat(
-          JSON.parse(
-            data.replaceAll('\'', '\"')
-          ),
+          flatJson,
           texture
         );
 
@@ -131,5 +144,20 @@ export default class FlatGenerator {
         console.error('An error happened.');
       }
     );
+  }
+
+  _getBBox() {
+    try {
+      object.geometry.computeBoundingBox();
+      object.updateMatrixWorld();
+
+      const box1 = object.geometry.boundingBox.clone();
+      box1.applyMatrix4(object.matrixWorld);
+      box1.userData = object.userData;
+      return box1;
+    } catch (e) {
+
+    }
+    return undefined;
   }
 }

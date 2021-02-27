@@ -10,7 +10,7 @@ import {
 //import { envMap } from "./textures.js";
 
 export default class CreateMesh {
-  create(wall) {
+  static create(wall) {
 
     let numVertices = wall.vertices.length;
     let positionNumComponents = 3;
@@ -37,7 +37,7 @@ export default class CreateMesh {
     const material = new MeshStandardMaterial({
         side: DoubleSide,
         color: new Color('#ffffff'),
-        envMap: envMap,
+        //envMap: envMap,
         roughness: 0.3,
         metalness: 0.01
       }

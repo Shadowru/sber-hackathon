@@ -1,5 +1,5 @@
 import { BufferGeometry, Mesh, Float32BufferAttribute,Vector2,DoubleSide, MeshStandardMaterial} from 'three';
-import {sort_ccw} from "../calculus/sort_ccw.js";
+import sort_ccw from "../calculus/sort_ccw.js";
 
 export default class WindowDepth {
     static create(window) {
@@ -10,7 +10,7 @@ export default class WindowDepth {
 
         let height = window.height + window.floor_height;
 
-        let p = sort_ccw(window.points.map(p => new Vector2(p[0], p[1])));
+        let p = sort_ccw.sort(window.points.map(p => new Vector2(p[0], p[1])));
 
         for (let i = 0, len = p.length; i < len; i++) {
             if (p[i].equals(window.s) && i !== 0) {

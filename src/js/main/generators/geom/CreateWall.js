@@ -64,7 +64,7 @@ export default class CreateWall {
 
                 if (wall.type === "room") group.add(WindowDepth.create(window));
 
-                WindowPart.bind(wall)(s_p, window);
+                //WindowPart.bind(wall)(s_p, window);
 
                 wall.v_n += 8;
                 s_p = window.e;
@@ -74,17 +74,17 @@ export default class CreateWall {
 
                 const doorDepthElement = doorDepth.create(door);
                 if (doorDepthElement !== undefined){
-                    group.add(doorDepth);
+                    group.add(doorDepthElement);
                 }
 
-                DoorPart.bind(wall)(s_p, door);
+                //DoorPart.create.bind(wall)(s_p, door);
 
                 wall.v_n += 7;
                 s_p = door.e;
             }
 
         }
-        SolidPart.bind(wall)(s_p);
+        //SolidPart.create.bind(wall)(s_p);
         group.add(CreateMesh.create(wall));
 
 

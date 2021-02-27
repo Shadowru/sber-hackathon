@@ -87,7 +87,6 @@ export default class RoomGenerator {
 
   generate2(rooms, walls) {
 
-
     const planeVertices = this._convertToVertices(rooms);
 
     const floorGeometry = new THREE.BufferGeometry();

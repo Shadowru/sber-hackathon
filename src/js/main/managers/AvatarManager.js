@@ -300,7 +300,7 @@ export default class AvatarManager {
         camera.position.set(
           27,
           4.2,
-          27
+          30
         );
 
         control.target.set(

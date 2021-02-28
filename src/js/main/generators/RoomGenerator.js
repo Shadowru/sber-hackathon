@@ -33,6 +33,8 @@ export default class RoomGenerator {
 
     }
 
+    const doorMeshes = [];
+
     for (const door of doors) {
 
       const doorMesh = this._generateShape(
@@ -46,9 +48,11 @@ export default class RoomGenerator {
 
       doorMesh.receiveShadow = true;
 
-      roomMeshes.push(
-        doorMesh
-      );
+      doorMeshes.push(doorMesh);
+
+      // roomMeshes.push(
+      //   doorMesh
+      // );
 
     }
 
@@ -57,6 +61,7 @@ export default class RoomGenerator {
       roomHeight,
       rooms,
       walls,
+      doorMeshes,
       windows
     );
 
@@ -79,6 +84,7 @@ export default class RoomGenerator {
       roomHeightTop,
       rooms,
       walls,
+      doorMeshes,
       windows
     );
 
@@ -120,7 +126,7 @@ export default class RoomGenerator {
     return windowMesh;
   }
 
-  _generateWalls(roomHeight, rooms, walls, windows) {
+  _generateWalls(roomHeight, rooms, walls, doors, windows) {
 
     let externalWall = this._generateShape(
       walls,
@@ -136,6 +142,12 @@ export default class RoomGenerator {
       );
 
       externalWall = this.subtract(externalWall, roomMesh).toMesh();
+    }
+
+    for (const door of doors) {
+
+      //externalWall = this.subtract(externalWall, door).toMesh();
+
     }
 
     const windowHeight = 1.2;

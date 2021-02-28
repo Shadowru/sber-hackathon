@@ -237,7 +237,7 @@ export default class SpeechManager {
 
   _sayAboutObject(id, avatarManager) {
     if (this._mainInstance !== undefined) {
-      if (key === '_room') {
+      if (id === '_room') {
         avatarManager.proceedSpeak();
       }
     }

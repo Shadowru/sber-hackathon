@@ -7,6 +7,7 @@ export default class AvatarManager {
 
 
   constructor(avatar, forward) {
+
     this._moveSpeed = 0.05 / 60;
     this._turnSpeed = 4;//this._moveSpeed / 4;
     this._avatar = avatar.scene;
@@ -40,6 +41,8 @@ export default class AvatarManager {
 
     this._boundingBox = cube;
 
+    this._current_quality = 'standard';
+
     this._initState();
 
   }
@@ -54,6 +57,9 @@ export default class AvatarManager {
     this._phonemeDuration = 3;
 
     this._boundingBoxes = undefined;
+    this._scene = undefined;
+    this._camera = undefined;
+    this._control = undefined;
 
     this._pressTime = -1;
     this._pressTimeout = 300;
@@ -63,9 +69,13 @@ export default class AvatarManager {
     this._speechManager = speechManager;
   }
 
-  update(deltaTime, inputManager, boundingBoxes) {
+  update(deltaTime, inputManager, boundingBoxes, scene, camera, control) {
 
+    //TODO: FIX as Strategy pattern
+    this._scene = scene;
     this._boundingBoxes = boundingBoxes;
+    this._camera = camera;
+    this._control = control;
 
     let speed = this._moveSpeed
     const avatar = this._avatar;
@@ -246,6 +256,119 @@ export default class AvatarManager {
     var clip = new THREE.AnimationClip('Action', 0.5, [quaternionKF]);
 
     return clip;
+  }
+
+  jumpTo(quality) {
+    if (quality !== this._current_quality) {
+      this._current_quality = quality;
+
+      const avatar = this._avatar;
+      const camera = this._camera;
+      const control = this._control;
+
+      if(quality === 'standard'){
+
+        console.log('Standart');
+
+        avatar.position.set(
+          3,
+          -0.02,
+          3.6
+        );
+
+        camera.position.set(
+          6,
+          7.8,
+          10.2
+        );
+
+        control.target.set(
+          0,
+          1.80,
+          0
+        );
+
+      } else {
+        console.log('Premial');
+
+        avatar.position.set(
+          30,
+          -0.02,
+          30.6
+        );
+
+        camera.position.set(
+          27,
+          4.2,
+          27
+        );
+
+        control.target.set(
+          30,
+          1.80,
+          30.6
+        );
+
+      }
+
+    }
+  }
+
+  setFloorMaterial(floor_texture) {
+
+    console.log('floor_texture', floor_texture);
+
+    const scene = this._scene;
+
+    scene.traverse(function (node) {
+
+        if (node instanceof THREE.Mesh) {
+
+          if (node.userData.id === 'floor') {
+            console.log('Found floor!');
+            node.material = new THREE.MeshStandardMaterial({
+              map: scene.userData.textureManager.getTexture(floor_texture),
+              side: THREE.DoubleSide
+            })
+          }
+        }
+
+      }
+    );
+
+  }
+
+  setLight(intensity) {
+    console.log('Light intensity', intensity);
+    this._scene.traverse(function (node) {
+
+      if (node.userData === undefined)
+        return;
+
+      if (node.userData.id === 'light') {
+        console.log('Found light!');
+        node.intensity = intensity;
+      }
+    });
+
+
+  }
+
+  setWallColor(wall_color) {
+    console.log('Wall color', wall_color);
+    this._scene.traverse(function (node) {
+
+        if (node instanceof THREE.Mesh) {
+
+          if (node.userData.id === 'walls') {
+            console.log('Found walls!');
+            node.material = new THREE.MeshStandardMaterial({color: wall_color, side: THREE.DoubleSide})
+          }
+        }
+
+      }
+    );
+
   }
 
   _speakAboutRoom(roomId) {

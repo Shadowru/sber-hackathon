@@ -15,6 +15,8 @@ export default class FlatGenerator {
 
     const textureManager = new TextureManager();
 
+    scene.userData.textureManager = textureManager;
+
     this._loadJSON(config.url, this._sceneImporter, config, scene, textureManager);
 
   }
@@ -26,6 +28,7 @@ export default class FlatGenerator {
       data['rooms'],
       data['doors'],
       data['external_walls'],
+      data['windows'],
       textureManager
     );
 
@@ -36,19 +39,27 @@ export default class FlatGenerator {
 
     console.log(jsonData);
 
-    const roomGeometry = roomGeometryGenerator.generate(
-      jsonData
-    );
-
-    console.log(roomGeometry);
-
-    roomMeshesArray.push(roomGeometry);
+    // const roomGeometry = roomGeometryGenerator.generate(
+    //   jsonData
+    // );
+    //
+    // const dd = 0.01;
+    //
+    // roomGeometry.scale.set(
+    //   dd,dd,dd
+    // );
+    //
+    // console.log(roomGeometry);
+    //
+    // roomMeshesArray.push(roomGeometry);
 
     return roomMeshesArray;
 
   }
 
   _sceneImporter(config, scene, flatObject) {
+
+    const lightPositions =[];
 
     scene.userData.boundingBoxes = [];
 
@@ -58,28 +69,89 @@ export default class FlatGenerator {
       object.translateY(config.translate.y);
       object.translateZ(config.translate.z);
 
-      let bbBox = undefined;
-
-      try {
-        object.geometry.computeBoundingBox();
-        object.updateMatrixWorld();
-
-        const box1 = object.geometry.boundingBox.clone();
-        box1.applyMatrix4(object.matrixWorld);
-        box1.userData = object.userData;
-        bbBox = box1;
-      } catch (e) {
-
-      }
-
-      if (bbBox !== undefined) {
-        scene.userData.boundingBoxes.push(bbBox);
-      }
-
-
       scene.add(object);
+
+      if (object.userData !== undefined) {
+        if (object.userData.id === 'walls') {
+          continue;
+        }
+
+
+
+        let bbBox = undefined;
+
+        try {
+          object.geometry.computeBoundingBox();
+          object.updateMatrixWorld();
+
+          const box1 = object.geometry.boundingBox.clone();
+          box1.applyMatrix4(object.matrixWorld);
+          box1.userData = object.userData;
+          bbBox = box1;
+          scene.userData.boundingBoxes.push(bbBox);
+
+          if (object.userData.roomId !== undefined) {
+            const room_center = bbBox.getCenter();
+            lightPositions.push(room_center);
+            //console.log(room_center);
+          }
+
+        } catch (e) {
+
+        }
+      }
+
     }
 
+    for (const lightPosition of lightPositions) {
+      // const light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+      // light.translateX(lightPosition.x);
+      // light.translateY(2.0);//lightPosition.y);
+      // light.translateZ(lightPosition.z);
+      // const helper = new THREE.HemisphereLightHelper( light, 0.05 );
+      // scene.add( helper );
+
+      const spotLight = new THREE.SpotLight( 0xffffff, 0.8 );
+      spotLight.position.set( lightPosition.x, 3.5, lightPosition.z );
+      spotLight.angle = 1.0;
+      spotLight.penumbra = 0.1;
+      spotLight.decay = 2;
+      spotLight.distance = 12;
+
+      spotLight.castShadow = true;
+      spotLight.shadow.mapSize.width = 512;
+      spotLight.shadow.mapSize.height = 512;
+      spotLight.shadow.camera.near = 0.01;
+      spotLight.shadow.camera.far = 100;
+      spotLight.shadow.focus = 1;
+
+      spotLight.userData.id = 'light';
+
+      scene.add( spotLight );
+
+      const targetObject = new THREE.Object3D();
+      targetObject.position.set(lightPosition.x, 0.0, lightPosition.z);
+
+      scene.add(targetObject);
+      spotLight.target = targetObject;
+
+      // const lightHelper = new THREE.SpotLightHelper( spotLight );
+      // scene.add( lightHelper );
+
+    }
+
+  }
+
+  _calcCenter(mesh) {
+
+    const geometry = mesh.geometry;
+    geometry.computeBoundingBox();
+
+    const center = new THREE.Vector3();
+    geometry.boundingBox.getCenter(center);
+
+    mesh.localToWorld(center);
+    return center;
   }
 
   _loadJSON(url, sceneImporter, config, scene, texture) {

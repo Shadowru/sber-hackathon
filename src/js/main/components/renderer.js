@@ -34,6 +34,9 @@ export default class Renderer {
     this.threeRenderer.outputEncoding = THREE.sRGBEncoding;
     this.threeRenderer.xr.enabled = true;
 
+    this.threeRenderer.gammaOutput = true;
+    this.threeRenderer.gammaFactor = 2.2;
+
     // VR Button
     document.body.appendChild( VRButton.createButton( this.threeRenderer ) );
 

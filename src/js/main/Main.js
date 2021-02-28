@@ -24,10 +24,10 @@ export default class Main {
       camera: {
         fov: 60,
         near: 0.001,
-        far: 1000,
+        far: 10000,
         aspect: 1,
-        posX: 0,
-        posY: 1.8,
+        posX: 6,
+        posY: 7.8,
         posZ: 10.2
       },
       controls: {
@@ -36,7 +36,7 @@ export default class Main {
         rotateSpeed: 0.5,
         zoomSpeed: 0.8,
         minDistance: 0.01,
-        maxDistance: 600,
+        maxDistance: 6000,
         minPolarAngle: Math.PI / 5,
         maxPolarAngle: Math.PI / 2,
         minAzimuthAngle: -Infinity,
@@ -46,7 +46,7 @@ export default class Main {
         enableZoom: true,
         target: {
           x: 0,
-          y: 1.8,
+          y: 1.80,
           z: 0
         }
       },
@@ -105,8 +105,10 @@ export default class Main {
         let idx = 0;
         for (const re of res) {
           if (re.avatar !== undefined) {
-            this._avatarManager = re.avatar.manager;
-            this._avatarManager.setSpeechManager(this._speechManager);
+            if(re.avatar.manager) {
+              this._avatarManager = re.avatar.manager;
+              this._avatarManager.setSpeechManager(this._speechManager);
+            }
           }
           idx++;
           progressCallback(Math.floor(idx / loadCount), '');
@@ -154,7 +156,7 @@ export default class Main {
     this._inputManager.update();
 
     if (this._avatarManager !== undefined) {
-      this._avatarManager.update(dt, this._inputManager, this._scene.userData.boundingBoxes);
+      this._avatarManager.update(dt, this._inputManager, this._scene.userData.boundingBoxes, this._scene, this._camera.threeCamera,  this._controls.threeControls);
     }
 
     // RAF

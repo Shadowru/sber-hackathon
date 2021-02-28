@@ -116,6 +116,18 @@ export default class SceneLoaderManager {
           faceVector
         );
 
+
+        try {
+          const model = gltf_scene.children[0];
+          model.traverse(child => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+        } catch (e) {
+
+        }
       }
 
       const gltfObject = main_instance._fixObject(

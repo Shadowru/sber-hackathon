@@ -19,6 +19,15 @@ export default class SpeechManager {
         'kitchen': ['расскажи кухн'],
         'bedroom': ['расскажи спальн'],
         'corridor': ['расскажи коридо', 'расскажи корридо'],
+        '_disable_light': ['выключ'],
+        '_enable_light': ['включ'],
+        '_gray_wall': ['серы'],
+        '_white_wall': ['белы'],
+        '_green_wall': ['зелён'],
+        '_wooden_floor': ['деревянный'],
+        '_floor': ['плитка'],
+        '_standard': ['стандарт'],
+        '_premial': ['премиал']
       }
     }
 
@@ -52,7 +61,7 @@ export default class SpeechManager {
 
   }
 
-  _playSound(audioBlob){
+  _playSound(audioBlob) {
     // const sound = this._soundProducer.getEmptySound();
     //
     // sound.rawAudioData = buffer;
@@ -149,33 +158,31 @@ export default class SpeechManager {
 
     console.log('Listen words diff [', this._prevListenWords, '][', listenWords, ']');
 
+    console.log('Start search');
 
     this._prevListenWords = listenWords;
 
+    let stopSearch = false;
+
     Object.keys(words).forEach((key, index) => {
+      if (stopSearch) {
+        return;
+      }
       const wordList = words[key];
       for (const wordListElement of wordList) {
         const wordListElements = wordListElement.split(' ');
         const found = this._searchWordEntry(wordListElements, listenWords);
         if (found) {
-          console.log(key);
+          console.log('found : ' + key);
           this.sayAvatar(key);
+          stopSearch = true;
           return;
         }
       }
     });
-    /*
-    console.log('Listen words', listenWords);
 
-    this._chatBotManager.chat(listenWords, (result) => {
-      console.log(result);
+    console.log('End search');
 
-      this._sberTTS.getSound(result, (wavBuffer) => {
-        this._playSound(wavBuffer)
-      });
-
-    });
-    */
   }
 
   _searchWordEntry(wordListElements, listenWords) {
@@ -198,7 +205,30 @@ export default class SpeechManager {
       const avatarManager = this._mainInstance.getAvatarManager();
 
       if (id.startsWith('_')) {
-        this._sayAboutObject(id, avatarManager);
+        if (id === '_room') {
+          this._sayAboutObject(id, avatarManager);
+        } else if (id === '_disable_light') {
+          avatarManager.setLight(0.0);
+        } else if (id === '_enable_light') {
+          avatarManager.setLight(0.8);
+        }
+        else if (id === '_white_wall') {
+          avatarManager.setWallColor(0xA0A0A0);
+        } else if (id === '_gray_wall') {
+          avatarManager.setWallColor(0x111111);
+        } else if (id === '_green_wall') {
+          avatarManager.setWallColor(0x71b76f);
+        } else if (id === '_wooden_floor') {
+          avatarManager.setFloorMaterial('floor_wooden');
+        } else if (id === '_floor') {
+          avatarManager.setFloorMaterial('floor');
+        }
+        else if (id === '_standard') {
+          avatarManager.jumpTo('standard');
+        }
+        else if (id === '_premial') {
+          avatarManager.jumpTo('premial');
+        }
       } else {
         avatarManager._speakAboutRoom(id);
       }
@@ -208,7 +238,7 @@ export default class SpeechManager {
   _sayAboutObject(id, avatarManager) {
     if (this._mainInstance !== undefined) {
       if (key === '_room') {
-          avatarManager.proceedSpeak();
+        avatarManager.proceedSpeak();
       }
     }
   }

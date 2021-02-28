@@ -34,6 +34,15 @@ export default class TextureManager {
 
     textures['door'] = texture2;
 
+    const texture3 = loader.load( "assets/textures/plywood_diff_1k.png" );
+
+    // it's necessary to apply these settings in order to correctly display the texture on a shape geometry
+
+    texture3.wrapS = texture3.wrapT = THREE.RepeatWrapping;
+    texture3.repeat.set( 1, 1 );
+
+    textures['floor_wooden'] = texture3;
+
   }
 
   getTexture(alias){

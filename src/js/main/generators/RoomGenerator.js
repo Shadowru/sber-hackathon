@@ -3,25 +3,29 @@ import * as THREE from 'three';
 import earcut from 'earcut'
 import {Vector2} from "three";
 
+import {ThreeBSP} from 'three-js-csg-es6'
+
 export default class RoomGenerator {
 
-  generate(rooms, doors, walls, textureManager) {
+  generate(rooms, doors, walls, windows, textureManager) {
 
     const roomMeshes = [];
 
-    const room_center = this._calcCenter(rooms);
 
     for (const room of rooms) {
 
       const roomMesh = this._generateShape(
         room.points,
         0.01,
-        textureManager.getTexture('floor')
+        new THREE.MeshStandardMaterial({map: textureManager.getTexture('floor'), side: THREE.DoubleSide})
       );
 
       roomMesh.userData = {
+        id: 'floor',
         roomId: room.type
       }
+
+      roomMesh.receiveShadow = true;
 
       roomMeshes.push(
         roomMesh
@@ -34,8 +38,13 @@ export default class RoomGenerator {
       const doorMesh = this._generateShape(
         door,
         -2.00,
-        textureManager.getTexture('door')
+        new THREE.MeshStandardMaterial({color: 0xfff400, side: THREE.DoubleSide}),
+        1.002
       );
+
+      //doorMesh.scale.set(2.0, 2.0, 2.0);
+
+      doorMesh.receiveShadow = true;
 
       roomMeshes.push(
         doorMesh
@@ -43,20 +52,122 @@ export default class RoomGenerator {
 
     }
 
+    const roomHeight = 2.6;
+    const wall_mesh = this._generateWalls(
+      roomHeight,
+      rooms,
+      walls,
+      windows
+    );
+
+    wall_mesh.material = new THREE.MeshStandardMaterial({color: 0x71b76f, side: THREE.DoubleSide});
+
+    wall_mesh.geometry.computeFaceNormals();
+    wall_mesh.geometry.computeVertexNormals();
+
+    wall_mesh.translateZ(-roomHeight);
+
+    wall_mesh.userData.id = 'walls';
+
+    wall_mesh.receiveShadow = true;
+
+    roomMeshes.push(wall_mesh);
+
+
+    const roomHeightTop = 0.01;
+    const wall_mesh_top = this._generateWalls(
+      roomHeightTop,
+      rooms,
+      walls,
+      windows
+    );
+
+    wall_mesh_top.material = new THREE.MeshStandardMaterial({color: 0x1c211c, side: THREE.DoubleSide});
+
+    wall_mesh_top.geometry.computeFaceNormals();
+    wall_mesh_top.geometry.computeVertexNormals();
+
+    wall_mesh_top.translateZ(-roomHeight - roomHeightTop);
+
+    wall_mesh_top.userData.id = 'wallstop';
+
+    roomMeshes.push(wall_mesh_top);
+
+    const windowHeight = 1.2;
+
+    for (const window of windows) {
+
+      const windowMesh = this._windowMesh(window, windowHeight);
+
+      roomMeshes.push(windowMesh);
+    }
+
     return roomMeshes;
   }
 
-  _generateShape(vertices, height, texture) {
+  _windowMesh(window, windowHeight) {
+    const windowMesh = this._generateShape(
+      window,
+      windowHeight,
+      new THREE.MeshStandardMaterial({color: 0xdddddd, side: THREE.DoubleSide}),
+      1.05,
+      true
+    );
 
-    //console.log(vertices);
+    windowMesh.translateX(-0.03);
+    windowMesh.translateY(-0.07);
+    windowMesh.translateZ(-2.0);
+    return windowMesh;
+  }
+
+  _generateWalls(roomHeight, rooms, walls, windows) {
+
+    let externalWall = this._generateShape(
+      walls,
+      roomHeight
+    );
+
+    for (const room of rooms) {
+
+      const roomMesh = this._generateShape(
+        room.points,
+        roomHeight,
+        undefined
+      );
+
+      externalWall = this.subtract(externalWall, roomMesh).toMesh();
+    }
+
+    const windowHeight = 1.2;
+
+    for (const window of windows) {
+
+      const windowMesh = this._windowMesh(window, windowHeight);
+
+      externalWall = this.subtract(externalWall, windowMesh).toMesh();
+    }
+
+    return externalWall;
+
+  }
+
+  subtract(obj1, obj2) {
+
+    var o1BSP = new ThreeBSP(obj1);
+    var o2BSP = new ThreeBSP(obj2);
+
+    return o1BSP.subtract(o2BSP);
+  }
+
+  _generateShape(vertices, height, material, proportions = 1.0, rotate = true) {
 
     const vectorArray = [];
 
     for (const vertex of vertices) {
       vectorArray.push(
         new THREE.Vector2(
-          this._transform(vertex[0]),
-          this._transform(vertex[1])
+          this._transform(vertex[0] * proportions),
+          this._transform(vertex[1] * proportions)
         )
       )
     }
@@ -66,22 +177,15 @@ export default class RoomGenerator {
 
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 
-    const mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({map: texture, side: THREE.DoubleSide}));
+    const mesh = new THREE.Mesh(geometry,
+      material
+    );
     mesh.receiveShadow = true;
-    mesh.rotateX(Math.PI / 2);
+    if (rotate) {
+      mesh.rotateX(Math.PI / 2);
+    }
 
     return mesh;
-
-  }
-
-  _calcCenter(rooms) {
-
-    for (const room of rooms) {
-      for (const point of room.points) {
-
-
-      }
-    }
 
   }
 
@@ -162,7 +266,6 @@ export default class RoomGenerator {
     wall_mesh.translateZ(-cent.z);
 
     //this._moveToCenter(mesh);
-
 
   }
 
@@ -256,4 +359,39 @@ export default class RoomGenerator {
   _transform(coord) {
     return coord / 100;
   }
+
+  _getBB(object) {
+    object.geometry.computeBoundingBox();
+    object.updateMatrixWorld();
+
+    const box3 = object.geometry.boundingBox.clone();
+
+    const dimensions = new THREE.Vector3().subVectors(box3.max, box3.min);
+
+    console.log(dimensions);
+
+    // const boxGeo = new THREE.BoxBufferGeometry(dimensions.x, dimensions.y, dimensions.z);
+    //
+    // const mesh = new THREE.Mesh(boxGeo, new THREE.MeshBasicMaterial( { color: 0xffcc55 } ));
+
+    const box = new THREE.Mesh(new THREE.BoxGeometry(dimensions.x, dimensions.y, dimensions.z));
+    // var polyhedronG = new THREE.Geometry();
+    // polyhedronG.vertices.push(
+    //   new THREE.Vector3(dimensions.x, dimensions.y, dimensions.z),   //A 0
+    //   new THREE.Vector3(-200,-200,200),   //B 1
+    //   new THREE.Vector3(200,-200,-200),   //D 2
+    //   new THREE.Vector3(-1,-1,-1)         //O 3
+    // );
+    // polyhedronG.faces.push(
+    //   new THREE.Face3( 0, 1, 2 ),
+    //   new THREE.Face3( 0, 2, 3 ),
+    //   new THREE.Face3( 0, 3, 1 ),
+    //   new THREE.Face3( 3, 2, 1 )
+    // );
+    //
+    // return polyhedronG;
+
+    return box;
+  }
+
 }

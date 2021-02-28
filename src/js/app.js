@@ -32,7 +32,7 @@ if (detector.webgl()) {
       const main = new Main(
         container,
         {
-          sky: false,
+          sky: true,
           scene: json
         },
         speechManager
